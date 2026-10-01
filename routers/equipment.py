@@ -163,6 +163,23 @@ def delete_equipment(
             detail=f"Equipment with ID {equipment_id} not found."
         )
 
+    maintenance_record = (
+        db.query(models.MaintenanceRecord)
+        .filter(
+            models.MaintenanceRecord.equipment_id == equipment_id
+        )
+        .first()
+    )
+
+    if maintenance_record:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Cannot delete equipment with existing "
+                "maintenance records."
+            )
+        )
+
     db.delete(equipment_record)
     db.commit()
 

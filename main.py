@@ -1,12 +1,7 @@
 from fastapi import FastAPI
 
-import models
-from database import engine
-from routers import equipment
+from routers import equipment, maintenance
 
-
-# Create database tables
-models.Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(
@@ -16,8 +11,8 @@ app = FastAPI(
 )
 
 
-# Register application routers
 app.include_router(equipment.router)
+app.include_router(maintenance.router)
 
 
 @app.get("/health")

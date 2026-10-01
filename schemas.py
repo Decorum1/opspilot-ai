@@ -1,6 +1,7 @@
 from datetime import date
 from enum import Enum
 from typing import Optional
+from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
@@ -43,3 +44,11 @@ class EquipmentUpdate(BaseModel):
     status: EquipmentStatus
     criticality: EquipmentCriticality
     last_maintenance_date: Optional[date] = None
+
+class MaintenanceRecordCreate(BaseModel):
+    equipment_id: int = Field(gt=0)
+    maintenance_date: date
+    maintenance_type: str = Field(min_length=2, max_length=50)
+    description: str = Field(min_length=2)
+    technician: str = Field(min_length=2, max_length=100)
+    cost: Optional[Decimal] = Field(default=None, ge=0)
