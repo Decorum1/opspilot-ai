@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from routers import equipment, maintenance
+from routers import equipment, maintenance, work_orders
 
 
 
@@ -13,7 +13,7 @@ app = FastAPI(
 
 app.include_router(equipment.router)
 app.include_router(maintenance.router)
-
+app.include_router(work_orders.router)
 
 @app.get("/health")
 def health_check():

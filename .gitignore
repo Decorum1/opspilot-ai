@@ -1,5 +1,6 @@
 .venv/
 __pyache__/
 *.pyc
+.pytest_cache/
 .env
 *.db

@@ -59,6 +59,10 @@ class Equipment(Base):
         "MaintenanceRecord",
         back_populates="equipment",
     )
+    work_orders = relationship(
+        "WorkOrder",
+        back_populates= "equipment",
+    )
 
 
 class MaintenanceRecord(Base):
@@ -98,6 +102,51 @@ class MaintenanceRecord(Base):
     equipment = relationship(
         "Equipment",
         back_populates="maintenance_records",
+    )
+
+
+class WorkOrder(Base):
+    __tablename__ = "work_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    equipment_id = Column(
+        Integer,
+        ForeignKey("equipment.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+
+    title = Column(String(150), nullable=False)
+    description = Column(Text, nullable=False)
+
+    priority = Column(
+        String(20),
+        nullable=False,
+        default="medium",
+    )
+
+    status = Column(
+        String(30),
+        nullable=False,
+        default="open",
+    )
+
+    assigned_to = Column(String(100), nullable=True)
+
+    due_date = Column(Date, nullable=True)
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    completed_at = Column(DateTime, nullable=True)
+
+    equipment = relationship(
+        "Equipment",
+        back_populates="work_orders",
     )
 
 
