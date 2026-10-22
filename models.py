@@ -10,6 +10,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Boolean,
 )
 from sqlalchemy.orm import relationship
 
@@ -116,6 +117,16 @@ class WorkOrder(Base):
         nullable=False,
         index=True,
     )
+    
+    assigned_user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True
+    )
+
+
+
 
     title = Column(String(150), nullable=False)
     description = Column(Text, nullable=False)
@@ -148,5 +159,41 @@ class WorkOrder(Base):
         "Equipment",
         back_populates="work_orders",
     )
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    full_name = Column(String(150), nullable=False)
+
+    email = Column(
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False
+    )
+
+    hashed_password = Column(String(255), nullable=False)
+
+    role = Column(
+        String(20),
+        nullable=False,
+        default="viewer"
+    )
+
+    is_active = Column(
+        Boolean,
+        nullable=False,
+        default=True
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+
 
 

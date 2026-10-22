@@ -1,12 +1,13 @@
 
 from datetime import datetime
+from auth_dependencies import require_roles 
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 import models
 from database import get_db
-from schemas import WorkOrderCreate, WorkOrderStatusUpdate
+from schemas import WorkOrderCreate, WorkOrderStatusUpdate, WorkOrderAssign
 
 
 router = APIRouter(
@@ -19,7 +20,11 @@ router = APIRouter(
 @router.post("", status_code=201)
 def create_work_order(
     work_order: WorkOrderCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(
+        require_roles("admin", "technician")
+    )
+
 ):
     equipment = (
         db.query(models.Equipment)
@@ -90,7 +95,10 @@ def get_work_order(
 def update_work_order_status(
     work_order_id: int,
     update: WorkOrderStatusUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(
+        require_roles("admin", "technician")
+    )
 ):
     work_order = (
         db.query(models.WorkOrder)
@@ -103,6 +111,16 @@ def update_work_order_status(
             status_code=404,
             detail="Work order not found"
         )
+
+
+    if current_user.role == "technician":
+        if work_order.assigned_user_id != current_user.id:
+            raise HTTPException(
+                status_code=403,
+                detail="You can only update work orders assigned to you"
+            )
+
+
 
     # Repeating the same status should not change anything
     if work_order.status == update.status:
@@ -140,3 +158,56 @@ def update_work_order_status(
     db.refresh(work_order)
 
     return work_order
+
+@router.patch("/{work_order_id}/assign")
+def assign_work_order(
+    work_order_id: int,
+    assignment: WorkOrderAssign,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(
+        require_roles("admin")
+    )
+):
+    work_order = (
+        db.query(models.WorkOrder)
+        .filter(models.WorkOrder.id == work_order_id)
+        .first()
+    )
+
+    if work_order is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Work order not found"
+        )
+
+    if work_order.status in ("completed", "cancelled"):
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot assign a completed or cancelled work order"
+        )
+
+    technician = (
+        db.query(models.User)
+        .filter(
+            models.User.id == assignment.assigned_user_id,
+            models.User.role == "technician",
+            models.User.is_active.is_(True)
+        )
+        .first()
+    )
+
+    if technician is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Active technician not found"
+        )
+
+    work_order.assigned_user_id = technician.id
+    work_order.assigned_to = technician.full_name
+
+    db.commit()
+    db.refresh(work_order)
+
+    return work_order
+
+

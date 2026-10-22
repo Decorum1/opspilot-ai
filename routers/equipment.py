@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from auth_dependencies import require_roles 
 
 import models
 from database import get_db
@@ -15,7 +16,10 @@ router = APIRouter(
 @router.post("")
 def create_equipment(
     equipment: EquipmentCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(
+        require_roles("admin")
+    )
 ):
     existing_equipment = (
         db.query(models.Equipment)

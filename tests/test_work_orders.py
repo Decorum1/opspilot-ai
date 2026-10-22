@@ -5,7 +5,7 @@ import models
 from conftest import TestingSessionLocal
 
 
-def test_create_work_order(client):
+def test_create_work_order(client, admin_headers):
     # Create equipment in the test database
     db = TestingSessionLocal()
 
@@ -33,6 +33,7 @@ def test_create_work_order(client):
     # Send a request to our FastAPI endpoint
     response = client.post(
         "/work-orders",
+        headers=admin_headers,
         json={
             "equipment_id": equipment_id,
             "title": "Inspect cooling system",
@@ -53,7 +54,7 @@ def test_create_work_order(client):
     assert data["priority"] == "high"
 
 
-def test_work_order_status_workflow(client):
+def test_work_order_status_workflow(client, admin_headers):
     db = TestingSessionLocal()
 
     try:
@@ -78,6 +79,7 @@ def test_work_order_status_workflow(client):
 
     response = client.post(
         "/work-orders",
+        headers=admin_headers,
         json={
             "equipment_id": equipment_id,
             "title": "Repair pump",
@@ -93,6 +95,7 @@ def test_work_order_status_workflow(client):
     # Move from open to in_progress
     response = client.patch(
         f"/work-orders/{work_order_id}/status",
+        headers=admin_headers,
         json={"status": "in_progress"},
     )
 
@@ -102,6 +105,7 @@ def test_work_order_status_workflow(client):
     # Complete the work order
     response = client.patch(
         f"/work-orders/{work_order_id}/status",
+        headers=admin_headers,
         json={"status": "completed"},
     )
 
@@ -114,6 +118,7 @@ def test_work_order_status_workflow(client):
     # Repeating completed must preserve the timestamp
     response = client.patch(
         f"/work-orders/{work_order_id}/status",
+        headers=admin_headers,
         json={"status": "completed"},
     )
 
@@ -123,6 +128,7 @@ def test_work_order_status_workflow(client):
     # Completed work orders cannot be reopened
     response = client.patch(
         f"/work-orders/{work_order_id}/status",
+        headers=admin_headers,
         json={"status": "open"},
     )
 

@@ -1,9 +1,9 @@
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from typing import Optional
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 
 class EquipmentStatus(str, Enum):
@@ -75,4 +75,32 @@ class WorkOrderStatusUpdate(BaseModel):
         "completed",
         "cancelled"
     ]
+
+
+class UserRegister(BaseModel):
+    full_name: str = Field(
+        min_length=2,
+        max_length=150
+    )
+
+    email: EmailStr
+
+    password: str = Field(
+        min_length=12,
+        max_length=128
+    )
+
+
+class UserResponse(BaseModel):
+    id: int
+    full_name: str
+    email: EmailStr
+    role: str
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class WorkOrderAssign(BaseModel):
+    assigned_user_id: int = Field(gt=0)
 

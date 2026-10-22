@@ -1,4 +1,4 @@
-
+import models
 import os
 
 import pytest
@@ -70,4 +70,35 @@ def client():
     finally:
         app.dependency_overrides.clear()
         Base.metadata.drop_all(bind=test_engine)
+
+
+from security import create_access_token, hash_password
+
+
+@pytest.fixture
+def admin_headers():
+    """Create a test administrator and return JWT headers."""
+    db = TestingSessionLocal()
+
+    try:
+        admin = models.User(
+            full_name="Test Administrator",
+            email="admin-test@example.com",
+            hashed_password=hash_password("TestOnly-Password-2026!"),
+            role="admin",
+            is_active=True,
+        )
+
+        db.add(admin)
+        db.commit()
+        db.refresh(admin)
+
+        token = create_access_token(admin.id)
+
+        return {
+            "Authorization": f"Bearer {token}"
+        }
+
+    finally:
+        db.close()
 
