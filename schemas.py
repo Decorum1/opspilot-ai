@@ -1,9 +1,10 @@
 from datetime import date, datetime
+
 from enum import Enum
 from typing import Optional
 from decimal import Decimal
 
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, model_validator
 
 
 class EquipmentStatus(str, Enum):
@@ -103,4 +104,53 @@ class UserResponse(BaseModel):
 
 class WorkOrderAssign(BaseModel):
     assigned_user_id: int = Field(gt=0)
+
+
+# ========================================
+# PHASE 5 - SENSOR DATA SCHEMAS
+# ========================================
+
+class SensorReadingCreate(BaseModel):
+    equipment_id: int = Field(gt=0)
+
+    temperature: float | None = None
+
+    vibration: float | None = Field(
+        default=None,
+        ge=0
+    )
+
+    pressure: float | None = None
+
+    operating_hours: float | None = Field(
+        default=None,
+        ge=0
+    )
+
+    @model_validator(mode="after")
+    def validate_measurements(self):
+        if all(
+            value is None
+            for value in (
+                self.temperature,
+                self.vibration,
+                self.pressure,
+                self.operating_hours,
+            )
+        ):
+            raise ValueError(
+                "At least one sensor measurement is required"
+            )
+
+        return self
+
+
+class SensorReadingResponse(SensorReadingCreate):
+    id: int
+    recorded_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+
 

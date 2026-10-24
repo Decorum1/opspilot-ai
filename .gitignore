@@ -26,3 +26,5 @@ Thumbs.db
 *.log
 
 #Local database files opspilot.db
+#Local database files opspilot.db
+*.db

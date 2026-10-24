@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from routers import equipment, maintenance, work_orders, auth
+from routers import equipment, maintenance, work_orders, auth, sensors
 
 
 
@@ -15,6 +15,7 @@ app.include_router(equipment.router)
 app.include_router(maintenance.router)
 app.include_router(work_orders.router)
 app.include_router(auth.router)
+app.include_router(sensors.router)
 
 @app.get("/health")
 def health_check():

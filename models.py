@@ -1,4 +1,8 @@
+from sqlalchemy import Float, DateTime, ForeignKey 
+from sqlalchemy.sql import func
+
 from datetime import datetime
+
 
 from sqlalchemy import (
     CheckConstraint,
@@ -193,6 +197,32 @@ class User(Base):
         default=datetime.utcnow,
         nullable=False
     )
+
+class SensorReading(Base):
+    __tablename__ = "sensor_readings"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    equipment_id = Column(
+        Integer,
+        ForeignKey("equipment.id"),
+        nullable=False,
+        index=True,
+    )
+
+    temperature = Column(Float, nullable=True)
+    vibration = Column(Float, nullable=True)
+    pressure = Column(Float, nullable=True)
+    operating_hours = Column(Float, nullable=True)
+
+    recorded_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+        index=True,
+    )
+
+
 
 
 
