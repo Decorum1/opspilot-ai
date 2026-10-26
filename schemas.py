@@ -154,3 +154,27 @@ class SensorReadingResponse(SensorReadingCreate):
     }
 
 
+# ==========================================
+# PHASE 6: MACHINE LEARNING PREDICTION SCHEMAS
+# ==========================================
+
+from pydantic import BaseModel, Field
+
+
+class PredictionRequest(BaseModel):
+    air_temperature: float = Field(gt=0)
+    process_temperature: float = Field(gt=0)
+    rotational_speed: float = Field(ge=0)
+    torque: float = Field(ge=0)
+    tool_wear: float = Field(ge=0)
+
+
+class PredictionResponse(BaseModel):
+    predicted_failure: bool
+    failure_score: float
+    threshold: float
+    model_version: str
+    model_status: str
+
+
+
